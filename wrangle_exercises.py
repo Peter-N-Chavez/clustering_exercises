@@ -11,6 +11,7 @@ from PIL import Image
 from pydataset import data
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import MinMaxScaler
 
 def get_db_url(hostname, username, password, database):
     url = f'mysql+pymysql://{username}:{password}@{hostname}/{database}'
