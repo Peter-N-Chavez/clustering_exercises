@@ -193,3 +193,31 @@ def prep_mall(df):
     print(f'validate: {validate.shape}')
     print(f'test: {test.shape}')
     return df, train, validate, test
+
+def summarize(df):
+    print('DataFrame head: \n')
+    print(df.head())
+    print('----------')
+    print('DataFrame info: \n')
+    print(df.info())
+    print('----------')
+    print('Dataframe Description: \n')
+    print(df.describe())
+    print('----------')
+    print('Null value assessments: \n')
+    print('nulls by column: ', nulls_by_col(df))
+    print('--')
+    print('nulls by row: ', nulls_by_row(df))
+    numerical_cols = [col for col in df.columns if df[col].dtype != 'O']
+    categorical_cols = [col for col in df.columns if col not in numerical_cols ]
+    print('--------')
+    print('value_counts: \n')
+    for col in df.columns:
+        print('Column Name: ', col)
+        if col in categorical_cols:
+            print(df[col].value_counts())
+        else:
+            print(df[col].value_counts(bins=10, sort=False))
+        print('--')
+    print('---------')
+    print('Report Finished')
