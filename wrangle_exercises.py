@@ -25,7 +25,7 @@ def get_mallcustomer_data():
     
     returns: a single Pandas DataFrame with the index set to the primary customer_id field
     '''
-    df = pd.read_sql('SELECT * FROM customers;', get_db_url(hostname, username, password,'mall_customers'))
+    df = pd.read_sql('SELECT * FROM customers;', get_db_url(env.hostname, env.username, env.password,'mall_customers'))
     return df.set_index('customer_id')
 
 # query will grab our zillow data with notable specs from the exercise set, particularly:
@@ -151,4 +151,45 @@ def wrangle_zillow():
     # take care of any duplicates:
     df = df.drop_duplicates()
     return df
+
+def split_data(df, target, seed=123):
+    '''
+    This function takes in a dataframe and splits the data into train, validate and test. 
+    '''
+    train_validate, test = train_test_split(df, test_size=0.2, random_state=seed)
     
+    train, validate = train_test_split(train_validate, test_size=0.3, random_state=seed)
+    return train, validate, test
+    
+def scale_my_malldata(train, validate, test):
+    '''
+    scale my data using minmaxscaler and add it back to my input datasets
+    '''
+    scaler = MinMaxScaler()
+    scaler.fit(train[['age', 'annual_income']])
+    
+    X_train_scaled = scaler.transform(train[['age', 'annual_income']])
+    X_validate_scaled = scaler.transform(validate[['age', 'annual_income']])
+    X_test_scaled = scaler.transform(test[['age', 'annual_income']])
+
+    train[['age_scaled', 'annual_income_scaled']] = X_train_scaled
+    validate[['age_scaled', 'annual_income_scaled']] = X_validate_scaled
+    test[['age_scaled', 'annual_income_scaled']] = X_test_scaled
+    return train, validate, test
+
+def prep_mall(df):
+    '''
+    dummy var for gender into is_male
+    split on target of 'spending_score'
+    scale age and annual income. 
+    '''
+    df['is_male'] = pd.get_dummies(df['gender'], drop_first=True)['Male']
+    train, validate, test = split_data(df, target='spending_score', seed=1349)
+    train, validate, test = scale_my_malldata(train, validate, test)
+    
+    print(f'df: {df.shape}')
+    print()
+    print(f'train: {train.shape}')
+    print(f'validate: {validate.shape}')
+    print(f'test: {test.shape}')
+    return df, train, validate, test
